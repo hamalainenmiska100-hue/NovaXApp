@@ -10,27 +10,37 @@ jobs:
     runs-on: macos-14
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Show files (debug)
-        run: ls -R
+      - name: Show environment
+        run: |
+          pwd
+          ls -la
+          xcodebuild -version
+
+      - name: Resolve Swift Package Dependencies
+        run: |
+          xcodebuild \
+            -resolvePackageDependencies \
+            -project NovaX.xcodeproj
 
       - name: Build App
         run: |
           xcodebuild \
-          -project NovaX.xcodeproj \
-          -scheme NovaXApp \
-          -sdk iphoneos \
-          -configuration Release \
-          -derivedDataPath build \
-          CODE_SIGNING_ALLOWED=NO \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGN_IDENTITY=""
+            -project NovaX.xcodeproj \
+            -scheme NovaXApp \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
 
       - name: Package IPA
         run: |
-          mkdir Payload
+          mkdir -p Payload
           cp -R build/Build/Products/Release-iphoneos/NovaXApp.app Payload/
           zip -r NovaX.ipa Payload
 
