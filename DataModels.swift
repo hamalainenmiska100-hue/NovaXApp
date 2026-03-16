@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Each mini‑app consists of multiple source files that the Gemini API returned.
 /// The files are stored on disk in a folder whose name is the mini‑app’s UUID.
-struct MiniApp: Identifiable, Codable, Equatable {
+struct MiniApp: Codable, Identifiable, Hashable {
     var id: UUID
     var name: String
     var created: Date
