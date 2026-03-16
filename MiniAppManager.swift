@@ -1,6 +1,6 @@
-import Darwin
 import Foundation
 import SwiftUI
+import Darwin
 
 /// Manages persistence and operations on mini‑apps.
 @MainActor
