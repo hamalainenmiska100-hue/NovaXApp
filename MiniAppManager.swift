@@ -1,6 +1,5 @@
 import Foundation
 import SwiftUI
-import ZIPFoundation
 
 /// Manages persistence and operations on mini‑apps.
 @MainActor
@@ -109,16 +108,33 @@ class MiniAppManager: ObservableObject {
     }
 
     /// Exports a mini‑app’s folder to a zip archive and returns the URL of the zip file.
-    func export(_ app: MiniApp) async throws -> URL {
-        let fm = FileManager.default
-        let folderURL = try app.folderURL()
-        let tempDir = fm.temporaryDirectory
-        let zipURL = tempDir.appendingPathComponent("\(app.name.replacingOccurrences(of: " ", with: "_"))_\(app.id).zip")
-        // Remove existing file if necessary
-        if fm.fileExists(atPath: zipURL.path) {
-            try fm.removeItem(at: zipURL)
-        }
-        try fm.zipItem(at: folderURL, to: zipURL)
-        return zipURL
+    /// Exports a mini-app’s folder to a zip archive and returns the URL of the zip file.
+func export(_ app: MiniApp) async throws -> URL {
+    let fm = FileManager.default
+    let folderURL = try app.folderURL()
+    let tempDir = fm.temporaryDirectory
+
+    let zipURL = tempDir.appendingPathComponent(
+        "\(app.name.replacingOccurrences(of: " ", with: "_"))_\(app.id).zip"
+    )
+
+    if fm.fileExists(atPath: zipURL.path) {
+        try fm.removeItem(at: zipURL)
     }
+
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
+    process.arguments = ["-r", zipURL.path, "."]
+
+    process.currentDirectoryURL = folderURL
+
+    try process.run()
+    process.waitUntilExit()
+
+    if process.terminationStatus != 0 {
+        throw NSError(domain: "ZipError", code: 1)
+    }
+
+    return zipURL
+}
 }
