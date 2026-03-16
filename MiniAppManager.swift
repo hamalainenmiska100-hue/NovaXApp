@@ -123,19 +123,15 @@ func export(_ app: MiniApp) async throws -> URL {
         try fm.removeItem(at: zipURL)
     }
 
-    let process = Process()
-    process.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
-    process.arguments = ["-r", zipURL.path, "."]
+    // For now just copy the folder to a temporary directory instead of zipping
+    let exportFolder = tempDir.appendingPathComponent("export_\(app.id)")
 
-    process.currentDirectoryURL = folderURL
-
-    try process.run()
-    process.waitUntilExit()
-
-    if process.terminationStatus != 0 {
-        throw NSError(domain: "ZipError", code: 1)
+    if fm.fileExists(atPath: exportFolder.path) {
+        try fm.removeItem(at: exportFolder)
     }
 
-    return zipURL
+    try fm.copyItem(at: folderURL, to: exportFolder)
+
+    return exportFolder
 }
 }
